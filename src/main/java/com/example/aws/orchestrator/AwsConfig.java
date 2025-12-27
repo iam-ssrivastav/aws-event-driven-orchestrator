@@ -76,4 +76,13 @@ public class AwsConfig {
                 .credentialsProvider(CREDENTIALS)
                 .build();
     }
+
+    @Bean
+    public software.amazon.awssdk.services.lambda.LambdaClient lambdaClient() {
+        return software.amazon.awssdk.services.lambda.LambdaClient.builder()
+                .endpointOverride(LOCALSTACK_URI)
+                .region(REGION)
+                .credentialsProvider(CREDENTIALS)
+                .build();
+    }
 }
