@@ -14,6 +14,32 @@ The system uses an **Event-Driven Resilience** pattern with a **Transactional Ou
 8. **CloudWatch** provides 360-degree observability.
 9. **Secrets Manager** secures automated credential rotation.
 
+### 📊 System Flow Diagram
+```mermaid
+graph TD
+    User((User)) -->|POST /tickets| API[API Gateway]
+    API -->|Route| SB[Spring Boot Service - EC2]
+    
+    subgraph "Atomic Transaction"
+        SB -->|Save Read Model| DDB[(DynamoDB)]
+        SB -->|Save Event| RDS[(PostgreSQL - RDS Outbox)]
+    end
+    
+    subgraph "Reliable Publisher"
+        Poller[Outbox Poller] -->|Read Unprocessed| RDS
+        Poller -->|Publish| SQS[SQS Queue]
+        Poller -->|Broadcast| SNS[SNS Topic]
+        Poller -->|Archive| S3[S3 Bucket]
+        Poller -->|Trigger| L[Lambda]
+        Poller -->|Update Status| RDS
+    end
+    
+    classDef aws fill:#ff9900,stroke:#232f3e,stroke-width:2px,color:white;
+    classDef compute fill:#3b48cc,stroke:#232f3e,stroke-width:2px,color:white;
+    class API,SQS,SNS,S3,DDB,L aws;
+    class SB,Poller compute;
+```
+
 ## 💎 Resume Highlights
 - **Distributed Async Processing**: Leveraged SQS as a durable buffer between microservices to prevent data loss.
 - **Serverless Integration**: Integrated AWS Lambda for event-triggered validation and lightweight compute tasks.
