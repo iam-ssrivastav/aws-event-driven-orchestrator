@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack_orchestrator
+    ports:
+      - "4566:4566"            # Edge Port (All services)
+      - "4510-4559:4510-4559"  # External services range
+    environment:
+      - SERVICES=iam,s3,sqs,sns,dynamodb,lambda,apigateway,cloudwatch,secretsmanager
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - "./docker/localstack:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  # We can add a simple Postgres here if the user eventually wants to mix SQL/NoSQL
+  postgres:
+    image: postgres:15
+    container_name: postgres_orchestrator
+    environment:
+      POSTGRES_DB: main_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
