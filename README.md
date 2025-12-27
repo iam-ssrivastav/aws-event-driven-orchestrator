@@ -3,16 +3,16 @@
 This project is a high-performance orchestration engine built using **Spring Boot** and the **AWS Java SDK (v2)**. It implements an asynchronous, decoupled architecture using the "Core Nine" AWS services, providing a production-grade blueprint for cloud-native applications.
 
 ## 🏛 Architecture
-The system uses an **Event-Driven Resilience** pattern:
+The system uses an **Event-Driven Resilience** pattern with a **Transactional Outbox**:
 1. **API Gateway** acts as the secured entry point.
 2. **Lambda** performs initial serverless validation.
-3. **SQS** buffers requests to handle traffic spikes.
-4. **Spring Boot (Consumer)** processes business logic using secrets from **Secrets Manager**.
-5. **DynamoDB** stores the operational state with sub-millisecond latency.
+3. **Transactional Outbox**: Business logic (DynamoDB) and Events (Postgres) are saved in a single atomic transaction.
+4. **Polling Publisher**: A background worker polls the outbox every 5 seconds and publishes confirmed events to AWS.
+5. **SQS** buffers requests to handle traffic spikes.
 6. **SNS** fan-out triggers multi-service actions.
 7. **S3** archives transaction artifacts (e-receipts).
 8. **CloudWatch** provides 360-degree observability.
-9. **IAM** enforces fine-grained security policies.
+9. **Secrets Manager** secures automated credential rotation.
 
 ## 💎 Resume Highlights
 - **Distributed Async Processing**: Leveraged SQS as a durable buffer between microservices to prevent data loss.
